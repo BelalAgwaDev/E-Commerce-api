@@ -15,25 +15,24 @@ exports.createSubCategoryValidator = [
     .withMessage("subCategory must be belong to category")
     .isMongoId()
     .withMessage("Invalid category id format"),
+  body("name").custom((val, { req }) => {
+    req.body.slug = slugify(val);
+    return true;
+  }),
   validatorMiddleware,
 ];
-
-
-
 
 exports.getSubCategoryValidator = [
   check("id").isMongoId().withMessage("Invalid subCategory id format"),
   validatorMiddleware,
 ];
 
-
-
 exports.updateSubCategoryValidator = [
   check("id").isMongoId().withMessage("Invalid subCategory id format"),
-  
+
   body("name").custom((val, { req }) => {
     req.body.slug = slugify(val);
-    return true
+    return true;
   }),
   validatorMiddleware,
 ];

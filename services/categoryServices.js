@@ -1,4 +1,4 @@
-const slugify = require("slugify");
+
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError/apiError");
 const CategoryModel = require("../modules/categoryModel");
@@ -7,11 +7,7 @@ const factory = require('./handlerFactory');
 //  @dec    create category
 //  @route  Post  /api/v1/categories
 //  @access Private
-exports.createCategory = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  const category = await CategoryModel.create({ name, slug: slugify(name) });
-  res.status(201).json({ data: category });
-});
+exports.createCategory = factory.createOne(CategoryModel)
 
 //  @dec    get list of categories
 //  @route  Get  /api/v1/categories?page=?&limit=?

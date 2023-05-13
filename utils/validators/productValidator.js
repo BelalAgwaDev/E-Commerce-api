@@ -141,6 +141,10 @@ exports.createProductValidator = [
     .isNumeric()
     .withMessage("ratingsQuantity must be a Number"),
 
+  body("title").custom((val, { req }) => {
+    req.body.slug = slugify(val);
+    return true;
+  }),
   validatorMiddleware,
 ];
 
