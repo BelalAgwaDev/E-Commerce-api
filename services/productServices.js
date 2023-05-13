@@ -16,10 +16,16 @@ exports.createProduct = asyncHandler(async (req, res) => {
 //  @route  Get  /api/v1/products?page=?&limit=?
 //  @access Public
 exports.getAllProduct = asyncHandler(async (req, res) => {
+
+  const quaryStringObj = { ...req.query };
+  const excludesFields = ["page", "sort", "limit", "fields"];
+  excludesFields.forEach((field) => delete quaryStringObj[field]);
+  console.log(quaryStringObj)
+
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
-  const product = await ProductModel.find({})
+  const product = await ProductModel.find(quaryStringObj)
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name -_id" });
