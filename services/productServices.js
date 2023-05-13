@@ -48,8 +48,30 @@ exports.getAllProduct = asyncHandler(async (req, res) => {
   if (req.query.fields) {
     const fields = req.query.fields.split(",").join(" ");
     mongoseQuery = mongoseQuery.select(fields);
-  }else{
+  } else {
     mongoseQuery = mongoseQuery.select("-__v");
+  }
+
+  //5) search
+  if (req.query.keyword) {
+    const queryKeyword = {};
+    console.log(req.query.keyword);
+    queryKeyword.$or = [
+      {
+        title: {
+          $regex: req.query.keyword,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: req.query.keyword,
+          $options: "i",
+        },
+      },
+    ];
+    mongoseQuery = ProductModel.find(queryKeyword);
+    console.log(queryKeyword);
   }
 
   //   execute mongose quary
