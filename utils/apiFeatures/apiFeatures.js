@@ -4,9 +4,9 @@ class ApiFeatures {
     this.queryString = queryString;
   }
 
-  Filter() {
+  filterData() {
     const quaryStringObj = { ...this.queryString };
-    const excludesFields = ["page", "sort", "limit", "fields"];
+    const excludesFields = ["page", "sort", "limit", "fields", "keyword"];
     excludesFields.forEach((field) => delete quaryStringObj[field]);
 
     //apply filteration using [gte,gt,lte,lt]
@@ -36,8 +36,7 @@ class ApiFeatures {
     return this;
   }
 
-  search(mongooseQueryModel) {
-    
+  search() {
     if (this.queryString.keyword) {
       const queryKeyword = {};
       queryKeyword.$or = [
@@ -54,7 +53,7 @@ class ApiFeatures {
           },
         },
       ];
-      this.mongooseQuery = mongooseQueryModel.find(queryKeyword).skip(this.paginationRuslt.skip).limit(this.paginationRuslt.limit);
+      this.mongooseQuery = this.mongooseQuery.find(queryKeyword);
     }
     return this;
   }
@@ -64,7 +63,6 @@ class ApiFeatures {
     const page = this.queryString.page * 1 || 1;
     const limit = this.queryString.limit * 1 || 5;
     const skip = (page - 1) * limit;
-   
 
     //paginate result
     paginate.currentPage = page;
@@ -72,7 +70,7 @@ class ApiFeatures {
     paginate.skip = skip;
 
     this.mongooseQuery = this.mongooseQuery.skip(skip).limit(limit);
-    this.paginationRuslt=paginate
+    this.paginationRuslt = paginate;
     return this;
   }
 }

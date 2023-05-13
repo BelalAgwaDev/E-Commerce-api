@@ -4,7 +4,6 @@ const ApiError = require("../utils/apiError/apiError");
 const ProductModel = require("../modules/productModel");
 const ApiFeatures = require("../utils/apiFeatures/apiFeatures");
 
-
 //  @dec    create product
 //  @route  Post  /api/v1/products
 //  @access Private
@@ -20,18 +19,23 @@ exports.createProduct = asyncHandler(async (req, res) => {
 exports.getAllProduct = asyncHandler(async (req, res) => {
   // build quary
   const apiFeatures = new ApiFeatures(ProductModel.find({}), req.query)
-  .pagination()
-    .Filter()
+    .pagination()
     .sorting()
     .Limitfields()
-    .search(ProductModel)
+    .filterData()
+    .search();
 
   //   execute mongose quary
-  const {mongooseQuery,paginationRuslt}=apiFeatures
+  const { mongooseQuery, paginationRuslt } = apiFeatures;
   const product = await mongooseQuery;
 
-  res.status(201).json({ results: product.length,page:paginationRuslt.currentPage ,data: product });
- 
+  res
+    .status(201)
+    .json({
+      results: product.length,
+      page: paginationRuslt.currentPage,
+      data: product,
+    });
 });
 
 //  @dec    get specific product by id
