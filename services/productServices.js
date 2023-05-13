@@ -2,6 +2,8 @@ const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError/apiError");
 const ProductModel = require("../modules/productModel");
+const ApiFeatures = require("../utils/apiFeatures/apiFeatures");
+
 
 //  @dec    create product
 //  @route  Post  /api/v1/products
@@ -16,68 +18,20 @@ exports.createProduct = asyncHandler(async (req, res) => {
 //  @route  Get  /api/v1/products?page=?&limit=?
 //  @access Public
 exports.getAllProduct = asyncHandler(async (req, res) => {
-  // 1) filtering
-  const quaryStringObj = { ...req.query };
-  const excludesFields = ["page", "sort", "limit", "fields"];
-  excludesFields.forEach((field) => delete quaryStringObj[field]);
-
-  //apply filteration using [gte,gt,lte,lt]
-  let quaryStr = JSON.stringify(quaryStringObj);
-  quaryStr = quaryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-  //2) pagination
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 5;
-  const skip = (page - 1) * limit;
-
   // build quary
-  let mongoseQuery = ProductModel.find(JSON.parse(quaryStr))
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "category", select: "name -_id" });
-
-  // 3) sorting
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" ");
-    mongoseQuery = mongoseQuery.sort(sortBy);
-  } else {
-    mongoseQuery = mongoseQuery.sort("-createdAt");
-  }
-
-  //4) fields limiting
-  if (req.query.fields) {
-    const fields = req.query.fields.split(",").join(" ");
-    mongoseQuery = mongoseQuery.select(fields);
-  } else {
-    mongoseQuery = mongoseQuery.select("-__v");
-  }
-
-  //5) search
-  if (req.query.keyword) {
-    const queryKeyword = {};
-    console.log(req.query.keyword);
-    queryKeyword.$or = [
-      {
-        title: {
-          $regex: req.query.keyword,
-          $options: "i",
-        },
-      },
-      {
-        description: {
-          $regex: req.query.keyword,
-          $options: "i",
-        },
-      },
-    ];
-    mongoseQuery = ProductModel.find(queryKeyword);
-    console.log(queryKeyword);
-  }
+  const apiFeatures = new ApiFeatures(ProductModel.find({}), req.query)
+  .pagination()
+    .Filter()
+    .sorting()
+    .Limitfields()
+    .search(ProductModel)
 
   //   execute mongose quary
-  const product = await mongoseQuery;
+  const {mongooseQuery,paginationRuslt}=apiFeatures
+  const product = await mongooseQuery;
 
-  res.status(201).json({ results: product.length, page: page, data: product });
+  res.status(201).json({ results: product.length,page:paginationRuslt.currentPage ,data: product });
+ 
 });
 
 //  @dec    get specific product by id
