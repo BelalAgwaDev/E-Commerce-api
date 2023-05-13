@@ -22,20 +22,37 @@ exports.getAllProduct = asyncHandler(async (req, res) => {
   excludesFields.forEach((field) => delete quaryStringObj[field]);
 
   //apply filteration using [gte,gt,lte,lt]
-let quaryStr=JSON.stringify(quaryStringObj)
-quaryStr=quaryStr.replace(/\b(gte|gt|lte|lt)\b/g,(match)=>`$${match}`)
+  let quaryStr = JSON.stringify(quaryStringObj);
+  quaryStr = quaryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
   //2) pagination
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
 
-  // 3) build quary
-  const mongoseQuery = ProductModel.find(JSON.parse(quaryStr))
+  // build quary
+  let mongoseQuery = ProductModel.find(JSON.parse(quaryStr))
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name -_id" });
 
-  // 4)  execute mongose quary
+  // 3) sorting
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    mongoseQuery = mongoseQuery.sort(sortBy);
+  } else {
+    mongoseQuery = mongoseQuery.sort("-createdAt");
+  }
+
+  //4) fields limiting
+  if (req.query.fields) {
+    const fields = req.query.fields.split(",").join(" ");
+    mongoseQuery = mongoseQuery.select(fields);
+  }else{
+    mongoseQuery = mongoseQuery.select("-__v");
+  }
+
+  //   execute mongose quary
   const product = await mongoseQuery;
 
   res.status(201).json({ results: product.length, page: page, data: product });
