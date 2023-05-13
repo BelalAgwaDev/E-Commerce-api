@@ -1,4 +1,5 @@
-const { check } = require("express-validator");
+const { check, body } = require("express-validator");
+const slugify = require("slugify");
 const asyncHandler = require("express-async-handler");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 
@@ -145,6 +146,11 @@ exports.createProductValidator = [
 
 exports.updateProductValidator = [
   check("id").isMongoId().withMessage("Invalid Product id format"),
+
+  body("title").custom((val, { req }) => {
+    req.body.slug = slugify(val);
+    return true;
+  }),
   validatorMiddleware,
 ];
 

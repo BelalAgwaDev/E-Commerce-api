@@ -36,9 +36,10 @@ class ApiFeatures {
     return this;
   }
 
-  search() {
+  search(modelName) {
     if (this.queryString.keyword) {
       const queryKeyword = {};
+    if(modelName==="product"){
       queryKeyword.$or = [
         {
           title: {
@@ -53,6 +54,14 @@ class ApiFeatures {
           },
         },
       ];
+    }else{
+      queryKeyword.$or=  [{
+        name: {
+          $regex: this.queryString.keyword,
+          $options: "i",
+        },
+      }]
+    }
       this.mongooseQuery = this.mongooseQuery.find(queryKeyword);
     }
     return this;
