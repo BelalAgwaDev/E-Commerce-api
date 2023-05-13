@@ -16,19 +16,28 @@ exports.createProduct = asyncHandler(async (req, res) => {
 //  @route  Get  /api/v1/products?page=?&limit=?
 //  @access Public
 exports.getAllProduct = asyncHandler(async (req, res) => {
-
+  // 1) filtering
   const quaryStringObj = { ...req.query };
   const excludesFields = ["page", "sort", "limit", "fields"];
   excludesFields.forEach((field) => delete quaryStringObj[field]);
-  console.log(quaryStringObj)
 
+  //apply filteration using [gte,gt,lte,lt]
+let quaryStr=JSON.stringify(quaryStringObj)
+quaryStr=quaryStr.replace(/\b(gte|gt|lte|lt)\b/g,(match)=>`$${match}`)
+  //2) pagination
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 5;
   const skip = (page - 1) * limit;
-  const product = await ProductModel.find(quaryStringObj)
+
+  // 3) build quary
+  const mongoseQuery = ProductModel.find(JSON.parse(quaryStr))
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name -_id" });
+
+  // 4)  execute mongose quary
+  const product = await mongoseQuery;
+
   res.status(201).json({ results: product.length, page: page, data: product });
 });
 

@@ -28,15 +28,18 @@ exports.createSubCategory = asyncHandler(async (req, res) => {
 //  @access Public
 exports.getAllSubCategory = asyncHandler(async (req, res) => {
 
-
+ // pagination
+ const page = req.query.page * 1 || 1;
+ const limit = req.query.limit * 1 || 5;
+ const skip = (page - 1) * limit;
 
   const subCategories = await SubCategoryModel.find(req.filterObject)
-    // .skip(skip)
-    // .limit(limit);
+     .skip(skip)
+     .limit(limit);
   // .populate({ path: "category", select: "name -_id" });
   res
     .status(201)
-    .json({ results: subCategories.length, data: subCategories });
+    .json({ results: subCategories.length,page: page, data: subCategories });
 });
 
 //  @dec    get specific sub category by id
