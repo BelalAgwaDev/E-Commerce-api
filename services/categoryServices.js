@@ -12,27 +12,7 @@ exports.createCategory = factory.createOne(CategoryModel)
 //  @dec    get list of categories
 //  @route  Get  /api/v1/categories?page=?&limit=?
 //  @access Public
-exports.getAllCategory = asyncHandler(async (req, res) => {
-  // build quary
-  const apiFeatures = new ApiFeatures(CategoryModel.find(), req.query)
-    .pagination()
-    .sorting()
-    .Limitfields()
-    .filterData()
-    .search();
-
-  //   execute mongose quary
-  const { mongooseQuery, paginationRuslt } = apiFeatures;
-  const categories = await mongooseQuery;
-
-  res
-    .status(201)
-    .json({
-      results: categories.length,
-      page: paginationRuslt.currentPage,
-      data: categories,
-    });
-});
+exports.getAllCategory =factory.getAll(CategoryModel)
 
 //  @dec    get specific category by id
 //  @route  Get  /api/v1/categories/:id

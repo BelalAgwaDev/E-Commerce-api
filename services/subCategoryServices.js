@@ -18,23 +18,7 @@ exports.createSubCategory =factory.createOne(SubCategoryModel)
 //  @dec    get list of sub categories
 //  @route  Get  /api/v1/subcategories?page=?&limit=?
 //  @access Public
-exports.getAllSubCategory = asyncHandler(async (req, res) => {
-
-    // build quary
-    const apiFeatures = new ApiFeatures(SubCategoryModel.find(req.filterObject), req.query)
-    .pagination()
-    .sorting()
-    .Limitfields()
-    .filterData()
-    .search();
-
-  //   execute mongose quary
-  const { mongooseQuery, paginationRuslt } = apiFeatures;
-  const subCategories = await mongooseQuery;
-  res
-    .status(201)
-    .json({ results: subCategories.length,page: paginationRuslt.currentPage, data: subCategories });
-});
+exports.getAllSubCategory = factory.getAll(SubCategoryModel)
 
 //  @dec    get specific sub category by id
 //  @route  Get  /api/v1/subCategories/:id

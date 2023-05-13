@@ -30,22 +30,44 @@ exports.updateOne = (model) =>
     res.status(201).json({ data: document });
   });
 
-
-
 exports.createOne = (model) =>
   asyncHandler(async (req, res) => {
     const document = await model.create(req.body);
     res.status(201).json({ data: document });
   });
 
-
-
-  exports.getOne = (model) =>asyncHandler(async (req, res, next) => {
+exports.getOne = (model) =>
+  asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     const document = await model.findById(id);
     if (!document) {
       return next(new ApiError(`No document for this id ${id}`, 404));
     }
-  
+
     res.status(201).json({ data: document });
   });
+
+exports.getAll = (model,modelName="") => 
+  asyncHandler(async (req, res) => {
+    let filter = {};
+    if (req.filterObject) {
+      filter = req.filterObject;
+    }
+    // build quary
+    const apiFeatures = new ApiFeatures(model.find(filter), req.query)
+      .pagination()
+      .sorting()
+      .Limitfields()
+      .filterData()
+      .search(modelName);
+
+    //   execute mongose quary
+    const { mongooseQuery, paginationRuslt } = apiFeatures;
+    const document = await mongooseQuery;
+    res.status(201).json({
+      results: document.length,
+      page: paginationRuslt.currentPage,
+      data: document,
+    });
+  });
+;

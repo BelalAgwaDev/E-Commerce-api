@@ -1,8 +1,4 @@
-
-const asyncHandler = require("express-async-handler");
-const ApiError = require("../utils/apiError/apiError");
 const BrandModel = require("../modules/brandModel");
-const ApiFeatures = require("../utils/apiFeatures/apiFeatures");
 const factory = require('./handlerFactory');
 
 //  @dec    create brand
@@ -13,26 +9,7 @@ exports.createBrand = factory.createOne(BrandModel)
 //  @dec    get list of Brands
 //  @route  Get  /api/v1/brands?page=?&limit=?
 //  @access Public
-exports.getAllBrands = asyncHandler(async (req, res) => {
-
-  // build quary
-  const apiFeatures = new ApiFeatures(BrandModel.find(), req.query)
-    .pagination()
-    .sorting()
-    .Limitfields()
-    .filterData()
-    .search();
-
-  //   execute mongose quary
-  const { mongooseQuery, paginationRuslt } = apiFeatures;
-  const brands = await mongooseQuery;
-  res.status(201).json({
-    results: brands.length,
-    page: paginationRuslt.currentPage,
-    data: brands,
-  });
-});
-
+exports.getAllBrands = factory.getAll(BrandModel)
 //  @dec    get specific Brand by id
 //  @route  Get  /api/v1/brands/:id
 //  @access Public

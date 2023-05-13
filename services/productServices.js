@@ -1,9 +1,4 @@
-
-const asyncHandler = require("express-async-handler");
-const ApiError = require("../utils/apiError/apiError");
 const ProductModel = require("../modules/productModel");
-
-const ApiFeatures = require("../utils/apiFeatures/apiFeatures");
 const factory = require('./handlerFactory');
 
 //  @dec    create product
@@ -14,27 +9,7 @@ exports.createProduct =factory.createOne(ProductModel)
 //  @dec    get list of product
 //  @route  Get  /api/v1/products?page=?&limit=?
 //  @access Public
-exports.getAllProduct = asyncHandler(async (req, res) => {
-  // build quary
-  const apiFeatures = new ApiFeatures(ProductModel.find(), req.query)
-    .pagination()
-    .sorting()
-    .Limitfields()
-    .filterData()
-    .search("product");
-
-  //   execute mongose quary
-  const { mongooseQuery, paginationRuslt } = apiFeatures;
-  const product = await mongooseQuery;
-
-  res
-    .status(201)
-    .json({
-      results: product.length,
-      page: paginationRuslt.currentPage,
-      data: product,
-    });
-});
+exports.getAllProduct = factory.getAll(ProductModel,"product")
 
 //  @dec    get specific product by id
 //  @route  Get  /api/v1/products/:id
