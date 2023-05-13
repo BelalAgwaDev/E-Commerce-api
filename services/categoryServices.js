@@ -37,15 +37,7 @@ exports.getAllCategory = asyncHandler(async (req, res) => {
 //  @dec    get specific category by id
 //  @route  Get  /api/v1/categories/:id
 //  @access Public
-exports.getCategory = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const categories = await CategoryModel.findById(id);
-  if (!categories) {
-    return next(new ApiError(`No Category for this id ${id}`, 404));
-  }
-
-  res.status(201).json({ data: categories });
-});
+exports.getCategory = factory.getOne(CategoryModel)
 
 //  @dec    update  category by id
 //  @route  Put  /api/v1/categories/:id
