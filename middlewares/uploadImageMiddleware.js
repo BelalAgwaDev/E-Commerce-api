@@ -14,21 +14,26 @@ const ApiError = require("../utils/apiError/apiError");
 //       }
 // })
 
-exports.uploadSingleImage=(fieldName)=>{
- const multerStorage = multer.memoryStorage();
-    //memory storage
+const multerOption=()=>{
+  const multerStorage = multer.memoryStorage();
+  //memory storage
 const multerFilter = function (req, file, cb) {
-    
-    if (file.mimetype.startsWith("image")) {
-      cb(null, true);
-    } else {
-      cb(new ApiError("only images are allowed", 400), false);
-    }
-  };
- 
-  const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
   
-  return  upload.single(fieldName);
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new ApiError("only images are allowed", 400), false);
+  }
+};
 
+const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
 
+return upload
 }
+
+exports.uploadSingleImage=(fieldName)=> multerOption().single(fieldName);
+
+
+
+
+exports.uploadListOfImage=(arryOfFields)=> multerOption().fields(arryOfFields);
