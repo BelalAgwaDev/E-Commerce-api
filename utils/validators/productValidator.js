@@ -151,8 +151,8 @@ exports.createProductValidator = [
 exports.updateProductValidator = [
   check("id").isMongoId().withMessage("Invalid Product id format"),
 
-  body("title").custom((val, { req }) => {
-    if (val) req.body.slug = slugify(val);
+  body("title").Option().custom((val, { req }) => {
+     req.body.slug = slugify(val);
     return true;
   }),
   validatorMiddleware,
