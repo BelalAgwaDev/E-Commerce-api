@@ -1,55 +1,51 @@
-const { v4: uuidv4 } = require('uuid');
-const multer  = require('multer')
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
+const asyncHandler = require("express-async-handler");
+const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const CategoryModel = require("../modules/categoryModel");
-const factory = require('./handlerFactory');
-const ApiError = require('../utils/apiError/apiError');
+const factory = require("./handlerFactory");
 
+//upload single image
+exports.uploadCategoryImage = uploadSingleImage("image");
 
-//Disk storage engine
-const multerStorage=multer.diskStorage({
-    destination:function(req,res,cb){
-         cb(null,"uploads/category")
-    },
-    filename: function (req, file, cb) {
-        const ext=file.mimetype.split("/")[1]
-        const filename = `category-${uuidv4()}-${Date.now()}.${ext}`
-        cb(null,filename)
-       
-      }
-})
+//image processing
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  const fileName = `category-${uuidv4()}-${Date.now()}.jpeg`;
+  if (req.file) {
+    console.log(fileName)
+    await sharp(req.file.buffer)
+      .resize(600, 600)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`uploads/categories/${fileName}`);
 
-const multerFilter=function(req,file,cb){
-    if(file.mimetype.startsWith("image")){
-        cb(null,true)
-    }else{
-        cb(new ApiError("only images are allowed",400),false)
-    }
-}
-const upload = multer({ storage: multerStorage,fileFilter:multerFilter })
-
-exports.uploadImage=upload.single('image')
+    //save image into our db
+    req.body.image =fileName;
+  }
+  next();
+});
 
 //  @dec    create category
 //  @route  Post  /api/v1/categories
 //  @access Private
-exports.createCategory = factory.createOne(CategoryModel)
+exports.createCategory = factory.createOne(CategoryModel);
 
 //  @dec    get list of categories
 //  @route  Get  /api/v1/categories?page=?&limit=?
 //  @access Public
-exports.getAllCategory =factory.getAll(CategoryModel)
+exports.getAllCategory = factory.getAll(CategoryModel);
 
 //  @dec    get specific category by id
 //  @route  Get  /api/v1/categories/:id
 //  @access Public
-exports.getCategory = factory.getOne(CategoryModel)
+exports.getCategory = factory.getOne(CategoryModel);
 
 //  @dec    update  category by id
 //  @route  Put  /api/v1/categories/:id
 //  @access Private
-exports.UpdateCategory = factory.updateOne(CategoryModel)
+exports.UpdateCategory = factory.updateOne(CategoryModel);
 
 //  @dec    delete  category by id
 //  @route  Delete  /api/v1/categories/:id
 //  @access Private
-exports.deleteCategory = factory.deleteOne(CategoryModel)
+exports.deleteCategory = factory.deleteOne(CategoryModel);
