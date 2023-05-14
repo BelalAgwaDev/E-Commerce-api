@@ -1,9 +1,34 @@
-
-const asyncHandler = require("express-async-handler");
-const ApiError = require("../utils/apiError/apiError");
+const { v4: uuidv4 } = require('uuid');
+const multer  = require('multer')
 const CategoryModel = require("../modules/categoryModel");
-const ApiFeatures = require("../utils/apiFeatures/apiFeatures");
 const factory = require('./handlerFactory');
+const ApiError = require('../utils/apiError/apiError');
+
+
+//Disk storage engine
+const multerStorage=multer.diskStorage({
+    destination:function(req,res,cb){
+         cb(null,"uploads/category")
+    },
+    filename: function (req, file, cb) {
+        const ext=file.mimetype.split("/")[1]
+        const filename = `category-${uuidv4()}-${Date.now()}.${ext}`
+        cb(null,filename)
+       
+      }
+})
+
+const multerFilter=function(req,file,cb){
+    if(file.mimetype.startsWith("image")){
+        cb(null,true)
+    }else{
+        cb(new ApiError("only images are allowed",400),false)
+    }
+}
+const upload = multer({ storage: multerStorage,fileFilter:multerFilter })
+
+exports.uploadImage=upload.single('image')
+
 //  @dec    create category
 //  @route  Post  /api/v1/categories
 //  @access Private
