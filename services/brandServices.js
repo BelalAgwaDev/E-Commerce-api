@@ -6,7 +6,7 @@ const BrandModel = require("../modules/brandModel");
 const factory = require("./handlerFactory");
 
 //upload single image
-exports.uploadCategoryImage = uploadSingleImage("image");
+exports.uploadBrandImage = uploadSingleImage("image");
 
 //image processing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
