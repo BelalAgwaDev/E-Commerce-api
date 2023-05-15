@@ -1,6 +1,7 @@
 const { check, body } = require("express-validator");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
+const bcrypt = require("bcryptjs");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 const UserModel = require("../../modules/userModel");
 
@@ -34,7 +35,6 @@ exports.createUserValidator = [
       })
     ),
 
-
   check("passwordConfirm")
     .notEmpty()
     .withMessage("password confirmation required"),
@@ -66,8 +66,7 @@ exports.createUserValidator = [
 exports.updateUserValidator = [
   check("id").isMongoId().withMessage("Invalid User id format"),
   check("email")
-    .notEmpty()
-    .withMessage("User Email required")
+    .optional()
     .isEmail()
     .withMessage("Invalid email address format")
     .custom(
@@ -94,5 +93,43 @@ exports.updateUserValidator = [
 
 exports.deleteUserValidator = [
   check("id").isMongoId().withMessage("Invalid User id format"),
+  validatorMiddleware,
+];
+
+exports.changeUserPasswordValidator = [
+  check("id").isMongoId().withMessage("Invalid User id format"),
+
+  check("currentPassword").notEmpty().withMessage("current Password required"),
+
+  check("passwordConfirm")
+    .notEmpty()
+    .withMessage("password confirmation required"),
+
+  check("password")
+    .notEmpty()
+    .withMessage("password required")
+    .isLength({ min: 6 })
+    .withMessage("password must be at least 6 characters long")
+    .custom(async (val, { req }) => {
+      //1) verify current password
+      const user = await UserModel.findById(req.params.id);
+      if (!user) {
+        throw new Error("there is no user with id");
+      }
+
+      const isCorrectPassword = await bcrypt.compare(
+        req.body.currentPassword,
+        user.password
+      );
+
+      if (!isCorrectPassword) {
+        throw new Error("Incorrect current password");
+      }
+
+      if (val !== req.body.passwordConfirm) {
+        throw new Error("password confirmation incorrect");
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
