@@ -46,3 +46,48 @@ exports.login = asyncHandler(async (req, res, next) => {
   //4) send response to client side
   res.status(201).json({ token, data: user });
 });
+
+
+
+
+exports.protect = asyncHandler(async (req, res, next) => {
+  // 1) check if token exist
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
+    return next(
+      new ApiError(
+        "you are not login ,please login to grt access this route.",
+        401
+      )
+    );
+  }
+
+  //2) verify token(no change happens ,expire token)
+const decoded=  jwt.verify(token,process.env.JWT_SECRET_KEY)
+
+
+  //check if user exist
+  const currentUser=await UserModel.findById(decoded.userId)
+  if(!currentUser){
+    return next(new ApiError("the user that belong to this token does no longer exist.",401));
+  }
+
+  //check if user change his password after token created
+  if(currentUser.passwordChangedAt){
+    const passChangeTimeStamp=parseInt(currentUser.passwordChangedAt.getTime()/1000,10)
+    if(passChangeTimeStamp>decoded.iat){
+      return next(new ApiError("User recently changed his password, please login again .",401));
+    }
+    
+  }
+
+  req.user=currentUser
+  next()
+});
