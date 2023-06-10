@@ -49,7 +49,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 
 
 
-
+// @dec make sure the user is logged in
 exports.protect = asyncHandler(async (req, res, next) => {
   // 1) check if token exist
   let token;
@@ -91,3 +91,15 @@ const decoded=  jwt.verify(token,process.env.JWT_SECRET_KEY)
   req.user=currentUser
   next()
 });
+
+
+
+exports.allowedTo=(...roles)=>asyncHandler(async (req, res, next) => {
+    //access roles
+  //access registered user 
+  if(!roles.includes(req.user.role)){
+    return next(new ApiError("you are not allowed to access this route .",403));
+  }
+  next()
+
+})
