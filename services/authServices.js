@@ -1,8 +1,11 @@
 const asyncHandler = require("express-async-handler");
+const crypto = require('crypto');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const ApiError = require("../utils/apiError/apiError");
 const UserModel = require("../modules/userModel");
+const sendEmail = require("../utils/sendEmail/sendEmail");
+
 
 const createToken = (payload) =>
   jwt.sign({ userId: payload }, process.env.JWT_SECRET_KEY, {
@@ -93,7 +96,7 @@ const decoded=  jwt.verify(token,process.env.JWT_SECRET_KEY)
 });
 
 
-
+// @desc user permissions
 exports.allowedTo=(...roles)=>asyncHandler(async (req, res, next) => {
     //access roles
   //access registered user 
@@ -102,4 +105,38 @@ exports.allowedTo=(...roles)=>asyncHandler(async (req, res, next) => {
   }
   next()
 
+})
+
+//  @dec    forget Password
+//  @route  Post  /api/v1/auth/forgetPassword
+//  @access Public
+exports.forgetPassword=asyncHandler(async (req, res, next) => {
+  //1) get user by email
+  const user=UserModel.findOne({email:req.body.email})
+  if(!user){
+    return next(new ApiError(`there is no user with that email ${req.body.email}.`,404));
+  }
+
+
+  //2) if user exist ,generate hash randam & digits and save it in db
+  const restCode=Math.floor(100000+Math.random()*900000).toString()
+  const hashRestCode=crypto.createHash("sha256").update(restCode).digest("hex")
+
+   //save hash pass into db
+   user.passwordRestCode=hashRestCode
+   //Add ecpiration time for pass rest code
+   user.passwordRestExpire=Date.now()+10*60*1000
+   user.passwordRestVerified=false
+   
+   await user.save
+  //3) send the reset code via email
+ 
+ await sendEmail({
+  email:user.email,
+  subject:"your password reset code (valid for 10 min )",
+  message:"kkjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+
+ })
+
+ res.status(200).json({status:200,message:"rest code send to email"})
 })
