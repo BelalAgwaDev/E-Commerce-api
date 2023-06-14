@@ -133,3 +133,79 @@ exports.changeUserPasswordValidator = [
     }),
   validatorMiddleware,
 ];
+
+
+exports.changeLoggedUserPasswordValidator = [
+
+  check("currentPassword").notEmpty().withMessage("current Password required"),
+
+  check("passwordConfirm")
+    .notEmpty()
+    .withMessage("password confirmation required"),
+
+  check("password")
+    .notEmpty()
+    .withMessage("password required")
+    .isLength({ min: 6 })
+    .withMessage("password must be at least 6 characters long")
+    .custom(async (val, { req }) => {
+      //1) verify current password
+      const user = await UserModel.findById(req.user.id);
+      if (!user) {
+        throw new Error("there is no user with id");
+      }
+
+      const isCorrectPassword = await bcrypt.compare(
+        req.body.currentPassword,
+        user.password
+      );
+
+      if (!isCorrectPassword) {
+        throw new Error("Incorrect current password");
+      }
+
+      if (val !== req.body.passwordConfirm) {
+        throw new Error("password confirmation incorrect");
+      }
+      return true;
+    }),
+  validatorMiddleware,
+];
+
+
+
+
+exports.updateLoggedUserValidator = [
+
+  body("name")
+  .optional()
+  .custom((val, { req }) => {
+    console.log(req.body.name)
+    req.body.slug = slugify(val);
+    return true;
+  }),
+
+  check("email")
+    .optional()
+    .isEmail()
+    .withMessage("Invalid email address format")
+    .custom(
+      asyncHandler(async (val) => {
+       
+        const emailUser = await UserModel.findOne({ email: val });
+        if (emailUser) {
+          throw new Error("E-mail already in user");
+        }
+      })
+    ),
+
+   
+  check("phone")
+    .optional()
+    .isMobilePhone(["ar-EG", "ar-SA"])
+    .withMessage("Invalid phone number only accepted Egy and SA phone numbers"),
+
+
+ 
+  validatorMiddleware,
+];
