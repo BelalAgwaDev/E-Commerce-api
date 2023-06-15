@@ -69,7 +69,7 @@ exports.deleteReviewValidator = [
         );
       }
   
-      if(review.user.toString() !== req.user._id.toString()){
+      if(review.user._id.toString() !== req.user._id.toString()){
         return Promise.reject(
           new Error("your are not allowed to perform this action")
         );

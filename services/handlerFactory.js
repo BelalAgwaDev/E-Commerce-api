@@ -2,19 +2,23 @@ const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError/apiError");
 const ApiFeatures = require("../utils/apiFeatures/apiFeatures");
 
-exports.deleteOne = (model) =>
+exports.deleteOne = (Model) =>
   asyncHandler(async (req, res, next) => {
     const { id } = req.params;
+    const document = await Model.findByIdAndDelete(id);
 
-    const document = await model.findByIdAndDelete(id);
     if (!document) {
       return next(new ApiError(`No document for this id ${id}`, 404));
     }
 
-    res
-      .status(201)
-      .json({ status: 201, message: `sucess to delete this document` });
+   if(Model.modelName==="Review"){
+    const productId=document.product
+    await Model.calcAvrageRatingsQuantity(productId);
+   }
+    res.status(201).send({message:"success delete document"});
   });
+
+
 
 exports.updateOne = (model) =>
   asyncHandler(async (req, res, next) => {
@@ -26,7 +30,7 @@ exports.updateOne = (model) =>
         new ApiError(`No document for this id ${req.params.id}`, 404)
       );
     }
-
+    document.save();
     res.status(201).json({ data: document });
   });
 
@@ -37,7 +41,6 @@ exports.createOne = (model) =>
   });
 
 exports.getOne = (model, populateOpt) =>
-
   asyncHandler(async (req, res, next) => {
     const { id } = req.params;
     let quary = model.findById(id);
@@ -55,8 +58,6 @@ exports.getOne = (model, populateOpt) =>
 
     res.status(201).json({ data: document });
   });
-
-
 
 exports.getAll = (model, modelName = "") =>
   asyncHandler(async (req, res) => {
