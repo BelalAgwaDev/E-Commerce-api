@@ -71,7 +71,7 @@ exports.getAllProduct = factory.getAll(ProductModel, "product");
 //  @dec    get specific product by id
 //  @route  Get  /api/v1/products/:id
 //  @access Public
-exports.getProduct = factory.getOne(ProductModel);
+exports.getProduct = factory.getOne(ProductModel,"reviews");
 
 //  @dec    update  product by id
 //  @route  Put  /api/v1/products/:id

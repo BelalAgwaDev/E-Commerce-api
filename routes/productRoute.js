@@ -1,5 +1,7 @@
 const express = require("express");
 const authServices = require("../services/authServices");
+const ReviewRoute = require("./reviewRoute");
+
 const {
   getProduct,
   updateProduct,
@@ -18,6 +20,10 @@ const {
 
 const router = express.Router();
 
+//post  /product/productId/reviews
+//Get  /product/productId/reviews
+//Get  /product/productId/reviews/reviewId
+router.use("/:productId/reviews", ReviewRoute);
 router
   .route("/")
   .post(authServices.protect,

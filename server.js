@@ -12,6 +12,7 @@ const brandRoute = require("./routes/brandRoute");
 const productRoute = require("./routes/productRoute");
 const UserRoute = require("./routes/userRoute");
 const AuthRoute = require("./routes/authRoute");
+const ReviewRoute = require("./routes/reviewRoute");
 
 
 dotenv.config({ path: "config.env" });
@@ -38,6 +39,7 @@ app.use("/api/v1/brands", brandRoute);
 app.use("/api/v1/products", productRoute);
 app.use("/api/v1/users", UserRoute);
 app.use("/api/v1/auth", AuthRoute);
+app.use("/api/v1/reviews", ReviewRoute);
 
 // route error
 app.all("*", (req, res, next) => {

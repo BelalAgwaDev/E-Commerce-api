@@ -36,10 +36,19 @@ exports.createOne = (model) =>
     res.status(201).json({ data: document });
   });
 
-exports.getOne = (model) =>
+exports.getOne = (model, populateOpt) =>
+
   asyncHandler(async (req, res, next) => {
     const { id } = req.params;
-    const document = await model.findById(id);
+    let quary = model.findById(id);
+    //build query
+    if (populateOpt) {
+      quary = quary.populate(populateOpt);
+    }
+
+    //execute query
+    const document = await quary;
+
     if (!document) {
       return next(new ApiError(`No document for this id ${id}`, 404));
     }
@@ -47,7 +56,9 @@ exports.getOne = (model) =>
     res.status(201).json({ data: document });
   });
 
-exports.getAll = (model,modelName="") => 
+
+
+exports.getAll = (model, modelName = "") =>
   asyncHandler(async (req, res) => {
     let filter = {};
     if (req.filterObject) {
@@ -70,4 +81,3 @@ exports.getAll = (model,modelName="") =>
       data: document,
     });
   });
-;

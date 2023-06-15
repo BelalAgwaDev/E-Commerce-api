@@ -74,9 +74,19 @@ const ProductSchema = mongoose.Schema(
     },
   },
 
-  { timestamps: true }
+  {
+    toJSON: { virtuals: true }, // So `res.json()` and other `JSON.stringify()` functions include virtuals
+    toObject: { virtuals: true },
+    timestamps: true,
+  }
 );
 //mongose query middlware
+ProductSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "product",
+  localField: "_id",
+});
+
 ProductSchema.pre(/^find/, function (next) {
   this.populate({
     path: "category",
