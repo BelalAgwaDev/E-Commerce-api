@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 
 const UserSchema = mongoose.Schema(
   {
@@ -20,39 +20,50 @@ const UserSchema = mongoose.Schema(
     },
     phone: String,
     profileImage: String,
-    password:{
-        type:String,
-        required:[true,"password required"],
-        minLength:[6,"Too short password"]
+    password: {
+      type: String,
+      required: [true, "password required"],
+      minLength: [6, "Too short password"],
     },
-    passwordChangedAt:Date,
-    passwordRestCode:String,
-    passwordRestExpire:Date,
-    passwordRestVerified:Boolean,
-    role:{
-        type:String,
-        enum:["user","admin"],
-        default:"user"
+    passwordChangedAt: Date,
+    passwordRestCode: String,
+    passwordRestExpire: Date,
+    passwordRestVerified: Boolean,
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
-    active:{
-        type:Boolean,
-        default:true
+    active: {
+      type: Boolean,
+      default: true,
     },
-    wishList:[{
-      type:mongoose.Schema.ObjectId,
-      ref:"Product"
-    }]
+    wishList: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: "Product",
+      },
+    ],
+    addresses: [
+      {
+        id: { type: mongoose.Schema.Types.ObjectId },
+        alias:String,
+        details:String,
+        phone:String,
+        city:String,
+        postCode:String
+      },
+    ],
   },
   { timestamps: true }
 );
 
-
-UserSchema.pre("save",async function(next){
-  if(!this.isModified("password")) return next()
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   //hashing user password
-  this.password=await bcrypt.hash(this.password,12)
-  next()
-})
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
 
 const UserModel = mongoose.model("User", UserSchema);
 
