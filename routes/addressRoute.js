@@ -6,6 +6,7 @@ const {
  getLoggedAddress
 } = require("../services/addressServieces");
 
+
 const router = express.Router();
 
 router.use(authServices.protect, authServices.allowedTo("user"));

@@ -6,16 +6,8 @@ const morgan = require("morgan");
 const ApiError = require("./utils/apiError/apiError");
 const globalError = require("./middlewares/errorMiddleware");
 const dbConnection = require("./config/database");
-const categoryRoute = require("./routes/categoryRoute");
-const subCategoryRoute = require("./routes/subCategoryRoute");
-const brandRoute = require("./routes/brandRoute");
-const productRoute = require("./routes/productRoute");
-const UserRoute = require("./routes/userRoute");
-const AuthRoute = require("./routes/authRoute");
-const ReviewRoute = require("./routes/reviewRoute");
-const WishListRoute = require("./routes/wishListRoute");
-const AddressRoute = require("./routes/addressRoute");
 
+const mountRoutes = require("./routes");
 
 dotenv.config({ path: "config.env" });
 
@@ -35,15 +27,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 //mount Routes
-app.use("/api/v1/categories", categoryRoute);
-app.use("/api/v1/subCategories", subCategoryRoute);
-app.use("/api/v1/brands", brandRoute);
-app.use("/api/v1/products", productRoute);
-app.use("/api/v1/users", UserRoute);
-app.use("/api/v1/auth", AuthRoute);
-app.use("/api/v1/reviews", ReviewRoute);
-app.use("/api/v1/wishList", WishListRoute);
-app.use("/api/v1/address", AddressRoute);
+mountRoutes(app);
 
 // route error
 app.all("*", (req, res, next) => {
