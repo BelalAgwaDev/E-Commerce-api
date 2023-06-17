@@ -68,9 +68,7 @@ exports.addProdctToCart = asyncHandler(async (req, res, next) => {
 //  @access Private/user
 exports.getLoggedUsercart = asyncHandler(async (req, res, next) => {
   //get cart for logged user
-  const cart = await CartModel.findOne({ user: req.user.id }).populate(
-    "cartItems.product"
-  );
+  const cart = await CartModel.findOne({ user: req.user.id })
 
   if (!cart) {
     return next(
@@ -97,7 +95,7 @@ exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
     {
       new: true,
     }
-  ).populate("cartItems.product");
+  )
 
   calculateTotalPrice(cart);
   await cart.save();
@@ -135,9 +133,7 @@ exports.updateSpecificCartItemQuantity = asyncHandler(
   async (req, res, next) => {
     const { quantity } = req.body;
 
-    const cart = await CartModel.findOne({ user: req.user._id }).populate(
-      "cartItems.product"
-    );
+    const cart = await CartModel.findOne({ user: req.user._id })
 
     if (!cart) {
       return next(
@@ -187,9 +183,7 @@ exports.applyCouponOnLoggedUserCart = asyncHandler(async (req, res, next) => {
   }
 
   // get logged user cart to get total price
-  const cart = await CartModel.findOne({ user: req.user._id }).populate(
-    "cartItems.product"
-  );
+  const cart = await CartModel.findOne({ user: req.user._id })
 
   if (!cart) {
     return next(
