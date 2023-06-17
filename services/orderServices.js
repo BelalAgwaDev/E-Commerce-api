@@ -1,4 +1,7 @@
 const asyncHandler = require("express-async-handler");
+require('dotenv').config({ path: 'config.env' })
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const OrderModel = require("../modules/orderModel");
 const CartModel = require("../modules/cartModel");
 const ProductModel = require("../modules/productModel");
@@ -105,6 +108,36 @@ exports.updatOrdersToDelivered = asyncHandler(async (req, res, next) => {
   res.status(200).send({ status: "success", data: updateOrder });
 });
 
+
+//  @dec    Get checkOut session from strip and send it as response
+//  @route  Get  /api/v1/orders/checkOut-session/cartId
+//  @access Protect/user
+exports.checkOutSession = asyncHandler(async (req, res, next) => {
+
+  const taxPrice = 0;
+  const shippingPrice = 0;
+//1) get Cart depend on cartId
+const cart = await CartModel.findById(req.params.cartId);
+if (!cart) {
+  return next(
+    new ApiError(`there is no cart for this  id : ${req.params.cartId}`, 404)
+  );
+}
+
+  //2) get order price depend on cart price "check coupon apply"
+  const cartPrice = cart.totalPriceAfterDiscount
+    ? cart.totalPriceAfterDiscount
+    : cart.totalCartPrice;
+
+  const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
+
+  //3) check strips checkOut session
+ 
+
+
+  //4) send session to response
+  res.status(200).send({ status: "success"});
+});
 
 
 

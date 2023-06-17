@@ -7,11 +7,14 @@ const {
   getallOrders,
   updatOrdersToPaid,
   updatOrdersToDelivered,
+  checkOutSession,
 } = require("../services/orderServices");
 
 const router = express.Router();
 
 router.use(authServices.protect);
+
+
 
 router
   .route("/:id/pay")
@@ -31,6 +34,6 @@ router
 
 router.use(authServices.allowedTo("user"));
 router.route("/:cartId").post(createCashOrder);
-
+router.route("/checkOut-session/:cartId").get(checkOutSession);
 router.route("/:id").get(getSpecificOrders);
 module.exports = router;
