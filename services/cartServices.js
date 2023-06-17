@@ -4,14 +4,14 @@ const ProductModel = require("../modules/productModel");
 const CouponModel = require("../modules/couponModel");
 const ApiError = require("../utils/apiError/apiError");
 
-const calculateTotalPrice = (cart) => { 
+const calculateTotalPrice = (cart) => {
   let totalPrice = 0;
 
   cart.cartItems.forEach((item) => {
     totalPrice += item.quantity * item.price;
   });
   cart.totalCartPrice = totalPrice;
-  cart.totalPriceAfterDiscount=undefined
+  cart.totalPriceAfterDiscount = undefined;
   return totalPrice;
 };
 
@@ -97,7 +97,7 @@ exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
     {
       new: true,
     }
-  );
+  ).populate("cartItems.product");
 
   calculateTotalPrice(cart);
   await cart.save();
@@ -135,7 +135,9 @@ exports.updateSpecificCartItemQuantity = asyncHandler(
   async (req, res, next) => {
     const { quantity } = req.body;
 
-    const cart = await CartModel.findOne({ user: req.user._id });
+    const cart = await CartModel.findOne({ user: req.user._id }).populate(
+      "cartItems.product"
+    );
 
     if (!cart) {
       return next(
@@ -185,7 +187,9 @@ exports.applyCouponOnLoggedUserCart = asyncHandler(async (req, res, next) => {
   }
 
   // get logged user cart to get total price
-  const cart = await CartModel.findOne({ user: req.user._id });
+  const cart = await CartModel.findOne({ user: req.user._id }).populate(
+    "cartItems.product"
+  );
 
   if (!cart) {
     return next(
