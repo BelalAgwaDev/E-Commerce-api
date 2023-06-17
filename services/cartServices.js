@@ -72,7 +72,7 @@ exports.getLoggedUsercart = asyncHandler(async (req, res, next) => {
 
   if (!cart) {
     return next(
-      ApiError(`there is no cart for this user id : ${req.user.id}`, 404)
+      new ApiError(`there is no cart for this user id : ${req.user.id}`, 404)
     );
   }
 
@@ -90,9 +90,8 @@ exports.UpdateCart = asyncHandler(async (req, res, next) => {});
 
 //  @dec    remove specific  Cart item
 //  @route  Delete  /api/v1/cart/:itemId
-//  @access Private
+//  @access Private/user
 exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
-  //get cart for logged user
   const cart = await CartModel.findOneAndUpdate(
     { user: req.user._id },
     {
@@ -112,3 +111,63 @@ exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
     data: cart,
   });
 });
+
+//  @dec    clear logged Cart item
+//  @route  Delete  /api/v1/cart/:itemId
+//  @access Private/user
+exports.clearLoggedCartItem = asyncHandler(async (req, res, next) => {
+  await CartModel.findOneAndDelete(
+    { user: req.user._id },
+    {
+      $pull: { cartItems: { _id: req.params.itemId } },
+    },
+    {
+      new: true,
+    }
+  );
+
+  res.status(200).json({
+    status: "success to clear data",
+  });
+});
+
+//  @dec    update specific Cart item quantity
+//  @route  Put  /api/v1/cart/:itemId
+//  @access Private/user
+exports.updateSpecificCartItemQuantity = asyncHandler(
+  async (req, res, next) => {
+    const { quantity } = req.body;
+
+    const cart = await CartModel.findOne({ user: req.user._id });
+
+    if (!cart) {
+      return next(
+        new ApiError(`there is no cart for this user id : ${req.user.id}`, 404)
+      );
+    }
+
+    const itemIndex = cart.cartItems.findIndex(
+      (item) => item._id.toString() === req.params.itemId
+    );
+    if (itemIndex > -1) {
+      const cartItem = cart.cartItems[itemIndex];
+      cartItem.quantity = quantity;
+    } else {
+      return next(
+        new ApiError(
+          `there is no item for this  id : ${req.params.itemId}`,
+          404
+        )
+      );
+    }
+
+    calculateTotalPrice(cart);
+    await cart.save();
+    
+    res.status(200).json({
+      status: "success",
+      numOfCartItems: cart.cartItems.length,
+      data: cart,
+    });
+  }
+);
