@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const CartModel = require("../modules/cartModel");
 const ProductModel = require("../modules/productModel");
-const factory = require("./handlerFactory");
 const ApiError = require("../utils/apiError/apiError");
 
 const calculateTotalPrice = (cart) => {
@@ -57,6 +56,7 @@ exports.addProdctToCart = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "protuct added to cart successfully",
+    numOfCartItems: cart.cartItems.length,
     data: cart,
   });
 });
@@ -66,7 +66,9 @@ exports.addProdctToCart = asyncHandler(async (req, res, next) => {
 //  @access Private/user
 exports.getLoggedUsercart = asyncHandler(async (req, res, next) => {
   //get cart for logged user
-  const cart = await CartModel.findOne({ user: req.user.id });
+  const cart = await CartModel.findOne({ user: req.user.id }).populate(
+    "cartItems.product"
+  );
 
   if (!cart) {
     return next(
@@ -74,26 +76,39 @@ exports.getLoggedUsercart = asyncHandler(async (req, res, next) => {
     );
   }
 
-  res
-    .status(200)
-    .json({
-      status: "success",
-      numOfCartItems: cart.cartItems.length,
-      data: cart,
-    });
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
 });
-
-//  @dec    get specific Cart by id
-//  @route  Get  /api/v1/cart/:id
-//  @access Public
-exports.getcart = factory.getOne(CartModel);
 
 //  @dec    update  Cart by id
 //  @route  Put  /api/v1/cart/:id
 //  @access Private
-exports.UpdateCart = factory.updateOne(CartModel);
+exports.UpdateCart = asyncHandler(async (req, res, next) => {});
 
-//  @dec    delete  Cart by id
-//  @route  Delete  /api/v1/cart/:id
+//  @dec    remove specific  Cart item
+//  @route  Delete  /api/v1/cart/:itemId
 //  @access Private
-exports.deleteCart = factory.deleteOne(CartModel);
+exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
+  //get cart for logged user
+  const cart = await CartModel.findOneAndUpdate(
+    { user: req.user._id },
+    {
+      $pull: { cartItems: { _id: req.params.itemId } },
+    },
+    {
+      new: true,
+    }
+  );
+
+  calculateTotalPrice(cart);
+  await cart.save();
+
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
+});
