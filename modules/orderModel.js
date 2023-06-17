@@ -28,6 +28,14 @@ const OrderSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    shippingAddress: {
+      details: String,
+      phone:String,
+      city:String,
+      postCode:String
+      
+    },
+
 
     totalOrderPrice: {
       type: Number,
