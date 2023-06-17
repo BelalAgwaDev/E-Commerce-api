@@ -1,15 +1,17 @@
 const asyncHandler = require("express-async-handler");
 const CartModel = require("../modules/cartModel");
 const ProductModel = require("../modules/productModel");
+const CouponModel = require("../modules/couponModel");
 const ApiError = require("../utils/apiError/apiError");
 
-const calculateTotalPrice = (cart) => {
+const calculateTotalPrice = (cart) => { 
   let totalPrice = 0;
 
   cart.cartItems.forEach((item) => {
     totalPrice += item.quantity * item.price;
   });
   cart.totalCartPrice = totalPrice;
+  cart.totalPriceAfterDiscount=undefined
   return totalPrice;
 };
 
@@ -82,11 +84,6 @@ exports.getLoggedUsercart = asyncHandler(async (req, res, next) => {
     data: cart,
   });
 });
-
-//  @dec    update  Cart by id
-//  @route  Put  /api/v1/cart/:id
-//  @access Private
-exports.UpdateCart = asyncHandler(async (req, res, next) => {});
 
 //  @dec    remove specific  Cart item
 //  @route  Delete  /api/v1/cart/:itemId
@@ -163,7 +160,7 @@ exports.updateSpecificCartItemQuantity = asyncHandler(
 
     calculateTotalPrice(cart);
     await cart.save();
-    
+
     res.status(200).json({
       status: "success",
       numOfCartItems: cart.cartItems.length,
@@ -171,3 +168,46 @@ exports.updateSpecificCartItemQuantity = asyncHandler(
     });
   }
 );
+
+//  @dec    apply coupon on logged user cart
+//  @route  Put  /api/v1/cart/applyCoupon
+//  @access Private/user
+exports.applyCouponOnLoggedUserCart = asyncHandler(async (req, res, next) => {
+  //1) get coupon based on coupon name
+
+  const coupon = await CouponModel.findOne({
+    name: req.body.coupon,
+    expire: { $gt: Date.now() },
+  });
+
+  if (!coupon) {
+    return next(new ApiError(`coupon is invalid or expire`));
+  }
+
+  // get logged user cart to get total price
+  const cart = await CartModel.findOne({ user: req.user._id });
+
+  if (!cart) {
+    return next(
+      new ApiError(`there is no cart for this user id : ${req.user.id}`, 404)
+    );
+  }
+
+  const totalPrice = cart.totalCartPrice;
+
+  // calculate price after totalPriceAfterDiscount
+
+  const totalPriceAfterDiscount = (
+    totalPrice -
+    (coupon.discount * totalPrice) / 100
+  ).toFixed(2);
+  cart.totalPriceAfterDiscount = totalPriceAfterDiscount;
+
+  await cart.save();
+
+  res.status(200).json({
+    status: "success",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
+});
