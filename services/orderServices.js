@@ -48,7 +48,7 @@ exports.createCashOrder = asyncHandler(async (req, res, next) => {
     await ProductModel.bulkWrite(bulkOption, {});
 
     //5) clear cart depend on cartId
-    await cart.findByIdAndDelete(req.params.cartId);
+    await CartModel.findByIdAndDelete(req.params.cartId);
   }
   res.status(200).send({status:"success",data:order})
 });

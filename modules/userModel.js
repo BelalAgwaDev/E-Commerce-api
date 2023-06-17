@@ -47,11 +47,16 @@ const UserSchema = mongoose.Schema(
     addresses: [
       {
         id: { type: mongoose.Schema.Types.ObjectId },
-        alias:String,
-        details:String,
-        phone:String,
-        city:String,
-        postCode:String
+        alias: {
+           type: String,
+            enum: ["Work", "Home"],
+             default: "Home" },
+        city: String,
+        region: String,
+        details: String,
+        latitude: Number,
+        longitude: Number,
+        phone: String,
       },
     ],
   },
