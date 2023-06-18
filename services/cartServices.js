@@ -68,11 +68,17 @@ exports.addProdctToCart = asyncHandler(async (req, res, next) => {
 //  @access Private/user
 exports.getLoggedUsercart = asyncHandler(async (req, res, next) => {
   //get cart for logged user
-  const cart = await CartModel.findOne({ user: req.user.id })
+  const cart = await CartModel.findOne({ user: req.user.id });
 
   if (!cart) {
     return next(
       new ApiError(`there is no cart for this user id : ${req.user.id}`, 404)
+    );
+  }
+
+  if (cart.cartItems.length === 0) {
+    return next(
+      new ApiError(`there is no cartItems for this  id : ${req.user.id}`, 404)
     );
   }
 
@@ -95,7 +101,13 @@ exports.removeSpecificCartItem = asyncHandler(async (req, res, next) => {
     {
       new: true,
     }
-  )
+  );
+
+  if (cart.cartItems.length === 0) {
+    return next(
+      new ApiError(`there is no cartItems for this  id : ${req.user.id}`, 404)
+    );
+  }
 
   calculateTotalPrice(cart);
   await cart.save();
@@ -133,7 +145,7 @@ exports.updateSpecificCartItemQuantity = asyncHandler(
   async (req, res, next) => {
     const { quantity } = req.body;
 
-    const cart = await CartModel.findOne({ user: req.user._id })
+    const cart = await CartModel.findOne({ user: req.user._id });
 
     if (!cart) {
       return next(
@@ -183,11 +195,17 @@ exports.applyCouponOnLoggedUserCart = asyncHandler(async (req, res, next) => {
   }
 
   // get logged user cart to get total price
-  const cart = await CartModel.findOne({ user: req.user._id })
+  const cart = await CartModel.findOne({ user: req.user._id });
 
   if (!cart) {
     return next(
       new ApiError(`there is no cart for this user id : ${req.user.id}`, 404)
+    );
+  }
+
+  if (cart.cartItems.length === 0) {
+    return next(
+      new ApiError(`there is no cartItems for this  id : ${req.user.id}`, 404)
     );
   }
 
