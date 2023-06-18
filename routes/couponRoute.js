@@ -8,9 +8,20 @@ const {
   getAllCoupons,
 } = require("../services/couponServices");
 
+const {
+  createCouponValidator,
+  updateCouponValidator,
+  deleteCouponValidator,
+  getCouponValidator,
+} = require("../utils/validators/couponValidator");
+
 const router = express.Router();
 router.use(authServices.protect, authServices.allowedTo("admin"));
-router.route("/").post(createCoupon).get(getAllCoupons);
+router.route("/").post(createCouponValidator, createCoupon).get(getAllCoupons);
 
-router.route("/:id").get(getCoupons).put(UpdateCoupon).delete(deleteCoupon);
+router
+  .route("/:id")
+  .get(getCouponValidator, getCoupons)
+  .put(updateCouponValidator, UpdateCoupon)
+  .delete(deleteCouponValidator, deleteCoupon);
 module.exports = router;

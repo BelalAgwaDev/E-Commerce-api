@@ -1,4 +1,4 @@
-const { check,  } = require("express-validator");
+const { check } = require("express-validator");
 
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 
@@ -33,13 +33,37 @@ exports.createAddressValidator = [
     .notEmpty()
     .withMessage("Address latitude required")
     .isNumeric()
-    .withMessage("Address latitude must  be numeric"),
+    .withMessage("Address latitude must  be numeric").custom((val, { req }) => {
+      if(val >= -90 && val <= 90){
+                //
+      }else{
+        throw new Error("latitude must be between -90 and 90");
+      }
+
+      return true;
+    }),
+
+
+    
 
   check("longitude")
     .notEmpty()
     .withMessage("Address latitude required")
     .isNumeric()
-    .withMessage("Address latitude must  be numeric"),
+    .withMessage("Address latitude must  be numeric").custom((val, { req }) => {
+      if(val >= -180 && val <= 180){
+                //
+      }else{
+        throw new Error("longitude must be between -180 and 180");
+      }
+
+      return true;
+    }),
+
+    
+
+
+   
   validatorMiddleware,
 ];
 
