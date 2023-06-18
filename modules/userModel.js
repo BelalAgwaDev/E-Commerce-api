@@ -44,21 +44,7 @@ const UserSchema = mongoose.Schema(
         ref: "Product",
       },
     ],
-    addresses: [
-      {
-        id: { type: mongoose.Schema.Types.ObjectId },
-        alias: {
-           type: String,
-            enum: ["Work", "Home"],
-             default: "Home" },
-        city: String,
-        region: String,
-        details: String,
-        latitude: Number,
-        longitude: Number,
-        phone: String,
-      },
-    ],
+   
   },
   { timestamps: true }
 );
